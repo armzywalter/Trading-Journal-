@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Trading Journal</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/static/book.js"></script>
+</head>
+<body>
+    <h1>📖 My Trading Journal</h1>
+    <a href="/logout">Logout</a>
+    <button onclick="window.location.href='/next_page'">➕ Next Page</button>
+
+    <div id="book">
+        {% for trade in trades %}
+        <div class="page">
+            <h2>Page {{ loop.index }}</h2>
+            <form method="POST" action="/save_trade">
+                <input type="hidden" name="id" value="{{ trade[0] }}">
+                <label>Date:</label> <input type="text" name="date" value="{{ trade[2] }}"><br>
+                <label>Pair:</label> <input type="text" name="pair" value="{{ trade[3] }}"><br>
+                <label>Direction:</label> <input type="text" name="direction" value="{{ trade[4] }}"><br>
+                <label>Entry:</label> <input type="text" name="entry" value="{{ trade[5] }}"><br>
+                <label>Exit:</label> <input type="text" name="exit" value="{{ trade[6] }}"><br>
+                <label>SL:</label> <input type="text" name="sl" value="{{ trade[7] }}"><br>
+                <label>TP:</label> <input type="text" name="tp" value="{{ trade[8] }}"><br>
+                <label>Lots:</label> <input type="text" name="lots" value="{{ trade[9] }}"><br>
+                <button type="submit">Save</button>
+            </form>
+
+            {% if trade[25] == 0 %}
+                <a href="/lock_trade/{{ trade[0] }}">🔒 Lock</a>
+            {% else %}
+                <a href="/unlock_trade/{{ trade[0] }}">🔓 Unlock</a>
+            {% endif %}
+            <a href="/delete_trade/{{ trade[0] }}">🗑 Delete</a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        $("#book").turn({
+            width: 800,
+            height: 600,
+            autoCenter: true
+        });
+    </script>
+</body>
+</html>
