@@ -1,3 +1,10 @@
+from flask import Flask, render_template, request, redirect, session
+import sqlite3
+
+app = Flask(__name__)
+app.secret_key = "your-secret-key"  # needed for sessions
+
+# --- Database setup ---
 def init_db():
     conn = sqlite3.connect("journal.db")
     c = conn.cursor()
@@ -36,6 +43,14 @@ def init_db():
     )""")
     conn.commit()
     conn.close()
+
+# --- Routes ---
+@app.route("/")
+def home():
+    if "user_id" not in session:
+        return redirect("/login")
+    return render_template("journal.html")
+
 @app.route("/save_trade", methods=["POST"])
 def save_trade():
     if "user_id" not in session:
@@ -58,3 +73,7 @@ def save_trade():
     conn.commit()
     conn.close()
     return redirect("/")
+
+if __name__ == "__main__":
+    init_db()
+    app.run(host="0.0.0.0", port=5000)
