@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Trading Journal</title>
+  <style>
+    body { font-family: Arial; background: #222; color: white; padding: 20px; }
+    .book { background: #111; padding: 20px; max-width: 900px; margin: auto; border-radius: 10px; }
+    h2 { color: #00ffcc; text-align: center; }
+    h3 { color: #ffcc00; margin-top: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    td { border: 1px solid #444; padding: 8px; }
+    label { font-weight: bold; display: block; margin-bottom: 5px; }
+    input, textarea { width: 100%; padding: 6px; border: none; border-radius: 5px; background: #333; color: white; }
+    textarea { resize: vertical; }
+    .buttons { margin-top: 15px; text-align: center; }
+    button { margin: 5px; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+    .lock { background: crimson; color: white; }
+    .new { background: seagreen; color: white; }
+    .logout { background: orange; color: black; }
+  </style>
+</head>
+<body>
+  <a href="/logout"><button class="logout">Logout</button></a>
+  <div id="pages"></div>
+
+  <script>
+    let pageCount = 0;
+
+    function saveJournal() {
+      const pages = document.getElementById("pages").innerHTML;
+      fetch("/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: pages })
+      });
+    }
+
+    function createPage() {
+      pageCount++;
+      const page = document.createElement("div");
+      page.className = "book";
+      page.innerHTML = `
+        <h2>Day ${pageCount} - Trading Journal</h2>
+        <h3>Trade Details</h3>
+        <table>
+          <tr><td><label>Date</label><input type="date" onchange="saveJournal()"></td><td><label>Currency Pair</label><input type="text" onchange="saveJournal()"></td></tr>
+          <tr><td><label>Entry Price</label><input type="number" step="0.01" onchange="saveJournal()"></td><td><label>Exit Price</label><input type="number" step="0.01" onchange="saveJournal()"></td></tr>
+          <tr><td><label>Stop Loss</label><input type="number" step="0.01" onchange="saveJournal()"></td><td><label>Take Profit</label><input type="number" step="0.01" onchange="saveJournal()"></td></tr>
+          <tr><td><label>Lots</label><input type="number" step="0.01" onchange="saveJournal()"></td><td><label>R:R</label><input type="text" onchange="saveJournal()"></td></tr>
+        </table>
+        <h3>Market Analysis</h3>
+        <textarea rows="3" onchange="saveJournal()"></textarea>
+        <h3>Trade Reasons & Emotions</h3>
+        <textarea rows="3" onchange="saveJournal()"></textarea>
+        <h3>Reflection</h3>
+        <textarea rows="3" onchange="saveJournal()"></textarea>
+        <div class="buttons">
+          <button class="lock" onclick="lockPage(this)">🔒 Lock Page</button>
+          <button class="new" onclick="createPage()">➕ New Page</button>
+        </div>
+      `;
+      document.getElementById("pages").appendChild(page);
+      saveJournal();
+    }
+
+    function lockPage(btn) {
+      const page = btn.closest(".book");
+      const inputs = page.querySelectorAll("input, textarea");
+      let locked = btn.textContent.includes("Unlock") ? true : false;
+      inputs.forEach(el => el.disabled = !locked);
+      btn.textContent = locked ? "🔒 Lock Page" : "🔓 Unlock Page";
+      saveJournal();
+    }
+
+    // Load saved entries
+    window.onload = function() {
+      fetch("/entries")
+        .then(res => res.json())
+        .then(data => {
+          if (data.length > 0) {
+            document.getElementById("pages").innerHTML = data[data.length - 1];
+          } else {
+            createPage();
+          }
+        });
+    };
+  </script>
+</body>
+</html>
