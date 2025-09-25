@@ -1,90 +1,110 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Trading Journal</title>
+  <title>Trade Journal</title>
   <style>
-    body { font-family: Arial; background: #222; color: white; padding: 20px; }
-    .book { background: #111; padding: 20px; max-width: 900px; margin: auto; border-radius: 10px; }
-    h2 { color: #00ffcc; text-align: center; }
-    h3 { color: #ffcc00; margin-top: 20px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    td { border: 1px solid #444; padding: 8px; }
-    label { font-weight: bold; display: block; margin-bottom: 5px; }
-    input, textarea { width: 100%; padding: 6px; border: none; border-radius: 5px; background: #333; color: white; }
-    textarea { resize: vertical; }
-    .buttons { margin-top: 15px; text-align: center; }
-    button { margin: 5px; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-    .lock { background: crimson; color: white; }
-    .new { background: seagreen; color: white; }
-    .logout { background: orange; color: black; }
+    body { font-family: Arial; background: #f8f9fa; padding: 20px; }
+    h2 { color: #2c3e50; }
+    .section { margin: 20px 0; padding: 15px; background: #fff; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    label { display: block; margin: 10px 0 5px; font-weight: bold; }
+    input, textarea, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px; }
+    button { margin-top: 20px; padding: 10px 15px; border: none; border-radius: 5px; background: seagreen; color: white; cursor: pointer; }
   </style>
 </head>
 <body>
-  <a href="/logout"><button class="logout">Logout</button></a>
-  <div id="pages"></div>
 
-  <script>
-    let pageCount = 0;
+  <h2>TRADE JOURNAL ENTRY</h2>
 
-    function saveJournal() {
-      const pages = document.getElementById("pages").innerHTML;
-      fetch("/save", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: pages })
-      });
-    }
+  <form method="POST" action="/save_trade">
+    
+    <div class="section">
+      <h3>Trade Details</h3>
+      <label>Date:</label>
+      <input type="date" name="date">
 
-    function createPage() {
-      pageCount++;
-      const page = document.createElement("div");
-      page.className = "book";
-      page.innerHTML = `
-        <h2>Day ${pageCount} - Trading Journal</h2>
-        <h3>Trade Details</h3>
-        <table>
-          <tr><td><label>Date</label><input type="date" onchange="saveJournal()"></td><td><label>Currency Pair</label><input type="text" onchange="saveJournal()"></td></tr>
-          <tr><td><label>Entry Price</label><input type="number" step="0.01" onchange="saveJournal()"></td><td><label>Exit Price</label><input type="number" step="0.01" onchange="saveJournal()"></td></tr>
-          <tr><td><label>Stop Loss</label><input type="number" step="0.01" onchange="saveJournal()"></td><td><label>Take Profit</label><input type="number" step="0.01" onchange="saveJournal()"></td></tr>
-          <tr><td><label>Lots</label><input type="number" step="0.01" onchange="saveJournal()"></td><td><label>R:R</label><input type="text" onchange="saveJournal()"></td></tr>
-        </table>
-        <h3>Market Analysis</h3>
-        <textarea rows="3" onchange="saveJournal()"></textarea>
-        <h3>Trade Reasons & Emotions</h3>
-        <textarea rows="3" onchange="saveJournal()"></textarea>
-        <h3>Reflection</h3>
-        <textarea rows="3" onchange="saveJournal()"></textarea>
-        <div class="buttons">
-          <button class="lock" onclick="lockPage(this)">🔒 Lock Page</button>
-          <button class="new" onclick="createPage()">➕ New Page</button>
-        </div>
-      `;
-      document.getElementById("pages").appendChild(page);
-      saveJournal();
-    }
+      <label>Currency Pair:</label>
+      <input type="text" name="pair">
 
-    function lockPage(btn) {
-      const page = btn.closest(".book");
-      const inputs = page.querySelectorAll("input, textarea");
-      let locked = btn.textContent.includes("Unlock") ? true : false;
-      inputs.forEach(el => el.disabled = !locked);
-      btn.textContent = locked ? "🔒 Lock Page" : "🔓 Unlock Page";
-      saveJournal();
-    }
+      <label>Trade Direction:</label>
+      <select name="direction">
+        <option>Long</option>
+        <option>Short</option>
+      </select>
 
-    // Load saved entries
-    window.onload = function() {
-      fetch("/entries")
-        .then(res => res.json())
-        .then(data => {
-          if (data.length > 0) {
-            document.getElementById("pages").innerHTML = data[data.length - 1];
-          } else {
-            createPage();
-          }
-        });
-    };
-  </script>
+      <label>Entry Price:</label>
+      <input type="number" step="0.0001" name="entry">
+
+      <label>Exit Price:</label>
+      <input type="number" step="0.0001" name="exit">
+
+      <label>Stop Loss (SL):</label>
+      <input type="number" step="0.0001" name="sl">
+
+      <label>Take Profit (TP):</label>
+      <input type="number" step="0.0001" name="tp">
+
+      <label>Position Size (Lots):</label>
+      <input type="number" step="0.01" name="lots">
+
+      <label>Risk-to-Reward Ratio (R:R):</label>
+      <input type="text" name="rr">
+
+      <label>Trade Duration:</label>
+      <input type="text" name="duration">
+
+      <label>Results (Profit/Loss in Pips):</label>
+      <input type="number" name="pl_pips">
+
+      <label>Account Balance Before:</label>
+      <input type="number" step="0.01" name="balance_before">
+
+      <label>Account Balance After:</label>
+      <input type="number" step="0.01" name="balance_after">
+    </div>
+
+    <div class="section">
+      <h3>Market Analysis</h3>
+      <label>Technical Analysis:</label>
+      <textarea name="technical"></textarea>
+
+      <label>Fundamental Analysis:</label>
+      <textarea name="fundamental"></textarea>
+
+      <label>Market Conditions:</label>
+      <textarea name="conditions"></textarea>
+    </div>
+
+    <div class="section">
+      <h3>Trade Reasons & Emotions</h3>
+      <label>Why Entered the Trade:</label>
+      <textarea name="reason"></textarea>
+
+      <label>Thoughts Before Trade:</label>
+      <textarea name="before"></textarea>
+
+      <label>Emotions During Trade:</label>
+      <textarea name="during"></textarea>
+
+      <label>Exit Reasoning:</label>
+      <textarea name="exit_reason"></textarea>
+    </div>
+
+    <div class="section">
+      <h3>Outcome & Reflection</h3>
+      <label>Outcome vs. Plan:</label>
+      <textarea name="outcome"></textarea>
+
+      <label>Key Lessons Learned:</label>
+      <textarea name="lessons"></textarea>
+
+      <label>Future Adjustments:</label>
+      <textarea name="adjustments"></textarea>
+    </div>
+
+    <button type="submit">Save Trade</button>
+  </form>
+
+  <br>
+  <a href="/logout">Logout</a>
 </body>
 </html>
